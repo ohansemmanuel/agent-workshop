@@ -1,0 +1,12 @@
+# Dependencies — node_modules in the repo root and every subfolder
+node_modules/
+
+# Environment files — ignore real env files everywhere (root + every subfolder),
+# but keep the committed template that the README's `cp .env.example .env.local`
+# step depends on.
+.env
+.env.*
+!.env.example
+
+# macOS
+.DS_Store
