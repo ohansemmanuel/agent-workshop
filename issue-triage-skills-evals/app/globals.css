@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+/* Wire Geist (loaded via next/font in layout.tsx) into Tailwind's font utilities,
+   so `font-sans` / `font-mono` resolve to Geist Sans / Geist Mono. */
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
+}
+
+/* Tailwind v4's Preflight no longer sets cursor:pointer on buttons (v3 did).
+   Restore it for enabled buttons; disabled ones keep the default arrow. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* One soft, zinc-tinted elevation for surfaces. No pure-black drop shadows. */
+@utility shadow-card {
+  box-shadow:
+    0 1px 2px rgba(24, 24, 27, 0.04),
+    0 10px 30px -12px rgba(24, 24, 27, 0.12);
+}
+
+/* A fresh triage record sliding in: motivated feedback (state transition),
+   not decoration. Collapses to nothing under prefers-reduced-motion. */
+@keyframes triage-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-triage-reveal {
+  animation: triage-reveal 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-triage-reveal {
+    animation: none;
+  }
+}
