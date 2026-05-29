@@ -1,4 +1,4 @@
-# From Big Prompts to Reliable React Agents
+# What?
 
 Five sibling apps take the **same** product feature —
 a support "Triage Copilot" — from a hand-rolled loop to a reliable, evaluated agent.
