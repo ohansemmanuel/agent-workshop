@@ -25,35 +25,35 @@ import { RUNBOOKS } from "./runbooks";
  * tool to grep. Same rules as 2x, but now uncrowded — so the model keeps them.
  */
 
-const PREAMBLE = `
-You are "Triage Copilot", the senior support-triage assistant for a SaaS product.
-A support engineer chats with you to triage incoming issues: classify severity,
-pick the right runbook, give next steps, name the owning team, and respect policy.
+// 🗂️ ────────────────────────────────────────────────────────────────────────
+// WORKSHOP TODO — write the THIN prompt + the skill workflow (the procedure)
+//
+// This is the "after" to issue-triage-2x. 2x pasted the whole knowledge base into
+// context and drifted. Here the prompt must stay SMALL and tell the model to fetch
+// knowledge on demand. Two strings to write:
+//
+// 1) PREAMBLE — the role, PLUS the key idea that the runbooks are NOT in this
+//    prompt: the model has a `skill` tool whose description lists every runbook
+//    (id, area, owner, when-to-use); it loads only the 1–2 it needs. A full
+//    incident archive lives on disk for the `bash` tool to grep.
+//
+// 2) SKILL_WORKFLOW — the per-turn procedure. Be explicit; gpt-5-mini will
+//    otherwise answer from the one-line index without loading the body:
+//      • Pick the SINGLE best runbook from the index (two only if it truly spans
+//        two). Many runbooks mention "timeouts" — DIFFERENT problems, different
+//        owners; disambiguate by area/symptoms, NEVER conflate.
+//      • You MUST call skill("<rb-id>") to load it before answering; treat the
+//        loaded text as authoritative.
+//      • For precedent, grep the archive with bash (e.g. grep -i "RB-CHK-02" incidents.md).
+//      • Apply ALL response rules R1–R5 (from the policies below) every turn.
+//
+// 💡 The lesson: the fix for drift is LESS context, not more reasoning. The
+//    runbook bodies + 180 incidents stay OUT of this string.
+// ─────────────────────────────────────────────────────────────────────────────
+const PREAMBLE = "TODO: write the thin preamble (see the brief above).";
 
-Your support knowledge base is NOT pasted into this prompt. Instead you have a
-\`skill\` tool whose description lists every runbook by id — with its area, owner,
-and when to use it. Load ONLY the one or two runbooks an issue actually needs, then
-answer from them. A full incident archive lives on disk for the \`bash\` tool to
-grep; do not expect it in your context.
-`.trim();
-
-/**
- * How to use the tools on every turn. Kept short and explicit — gpt-5-mini will
- * sometimes answer straight from the one-line index if you don't insist it load
- * the body, and the whole point of the demo is that it loads the RIGHT runbook.
- */
-const SKILL_WORKFLOW = `
-HOW TO ANSWER EVERY ISSUE
-1. Read the issue. Scan the \`skill\` tool's index and pick the SINGLE best-matching
-   runbook (two only if the issue genuinely spans two). Many runbooks mention
-   "timeouts" — they are DIFFERENT problems with different owners; disambiguate by
-   area and symptoms, never conflate them.
-2. You MUST call skill("<rb-id>") to load that runbook before you answer. Treat the
-   loaded text as authoritative; do not guess steps from memory.
-3. If the engineer asks about past incidents, or you want precedent, grep the
-   archive with the bash tool (e.g. \`grep -i "RB-CHK-02" incidents.md\`).
-4. Then write the reply, applying ALL response rules R1–R5 above on every turn.
-`.trim();
+// 👆 See the WORKSHOP TODO above PREAMBLE for the full brief on this procedure.
+const SKILL_WORKFLOW = "TODO: write the per-turn skill workflow (see the brief above).";
 
 /** Incidents per runbook in the on-disk archive (NOT in the prompt; grep-able). */
 export const INCIDENTS_PER_RUNBOOK = 10;

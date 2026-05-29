@@ -84,7 +84,11 @@ export function IssueTriageDemo() {
     });
   }
 
-  // Validate the streamed JSON at the UI boundary, but only once the run is done.
+  // 🚦 SAFE UI STATE: the model's output becomes a rendered card ONLY after it
+  // passes parseTriageText — the contract boundary you build in
+  // lib/triage/parse.ts. Until then it returns { ok: false }, which renders as
+  // the red alert below instead of a half-broken card. Validate at the boundary;
+  // branch the UI on the result.
   const result =
     status === "ready" && answerText ? parseTriageText(answerText) : null;
 

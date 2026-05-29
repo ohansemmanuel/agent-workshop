@@ -1,3 +1,9 @@
+// 🧭 ON THE `todo` BRANCH: there is NOTHING to build in issue-triage-2x. This app
+// is the cautionary "before" — the ENTIRE knowledge base crammed into one giant
+// system prompt (see buildSystemPrompt below). Run it, push it hard, and watch it
+// DRIFT: dropped rules, the wrong runbook, contradictions across turns. You FIX
+// this next door in issue-triage-skills with Agent Skills + progressive
+// disclosure. The bloat here is intentional — leave it.
 import {
   COMMUNICATION_TONE,
   COMPLIANCE,

@@ -85,51 +85,34 @@ async function main() {
 }
 
 async function runAgent(question: string): Promise<string> {
-  let nextInput: unknown[] = [
-    {
-      role: "user",
-      content: question,
-    },
-  ];
-
-  let previousResponseId: string | undefined = undefined;
-
-  const maxSteps = 5;
-
-  for (let step = 1; step <= maxSteps; step++) {
-    console.log(`\n--- LLM CALL ${step} ---`);
-
-    const response = await callModel(nextInput, previousResponseId);
-
-    const toolCalls = response.output.filter(isFunctionCallItem);
-
-    if (toolCalls.length === 0) {
-      return extractOutputText(response) || "(No final text returned.)";
-    }
-
-    const toolOutputs: unknown[] = [];
-
-    for (const toolCall of toolCalls) {
-      console.log(`MODEL REQUESTED TOOL: ${toolCall.name}`);
-      console.log(`TOOL ARGUMENTS: ${toolCall.arguments}`);
-
-      const parsedArgs = safeJsonParse(toolCall.arguments);
-      const result = await runTool(toolCall.name, parsedArgs);
-
-      console.log(`TOOL RESULT: ${result}`);
-
-      toolOutputs.push({
-        type: "function_call_output",
-        call_id: toolCall.call_id,
-        output: result,
-      });
-    }
-
-    previousResponseId = response.id;
-    nextInput = toolOutputs;
-  }
-
-  throw new Error(`Agent stopped after ${maxSteps} steps. Possible loop.`);
+  // 🧩 ───────────────────────────────────────────────────────────────────────
+  // BUILD BY HAND — THE AGENT LOOP (the whole point of minute 30–50)
+  //
+  // An agent is not magic. It is a LOOP around an LLM call. Write that loop here,
+  // by hand, so you never forget what the SDK does for you in every later demo.
+  //
+  // The recipe (every helper you need already exists in this file):
+  //   1. Seed the input with the user's question:
+  //        [{ role: "user", content: question }]
+  //   2. Loop up to `maxSteps` (e.g. 5) — a hard cap so a misbehaving model can
+  //      never spin forever:
+  //        a. Call the model:      const res = await callModel(input, prevId)
+  //        b. Find tool requests:  res.output.filter(isFunctionCallItem)
+  //        c. NONE? You're done →  return extractOutputText(res)
+  //        d. For each tool call: parse its `arguments` with safeJsonParse, run
+  //           it via runTool(name, args), and collect a result shaped like
+  //             { type: "function_call_output", call_id, output: result }
+  //        e. Feed those results back as the next `input`, keep res.id as the
+  //           next `previous_response_id`, and loop.
+  //   3. Fell out of the loop? Throw — it ran too long.
+  //
+  // 💡 The big idea: the MODEL only *requests* tool calls. YOUR code decides
+  //    whether/how to run them and feeds results back. That control is the job —
+  //    it's why reliability is an engineering problem, not a prompting one.
+  // ───────────────────────────────────────────────────────────────────────────
+  throw new Error(
+    `TODO(tiny-agent): implement the agent loop in runAgent() for: "${question}"`,
+  );
 }
 
 async function callModel(
@@ -202,13 +185,24 @@ function isOutputTextContent(value: unknown): value is OutputTextContent {
 }
 
 async function runTool(name: string, args: unknown): Promise<string> {
-  if (name === "get_workshop_stage") {
-    return getWorkshopStage(args);
-  }
-
-  return JSON.stringify({
-    error: `Unknown tool: ${name}`,
-  });
+  // 🛠️ ───────────────────────────────────────────────────────────────────────
+  // BUILD BY HAND — THE TOOL DISPATCH ("validate & execute" half of the loop)
+  //
+  // The model asked to call a tool by `name` with `args`. This is where YOUR app
+  // takes over: match the name to a real function, run it, return its result as
+  // a string for the loop to feed back to the model.
+  //   • name === "get_workshop_stage" → return getWorkshopStage(args)
+  //   • anything else → return a JSON error string. NEVER assume the model only
+  //     asks for tools that exist, e.g.:
+  //       JSON.stringify({ error: `Unknown tool: ${name}` })
+  //
+  // 💡 getWorkshopStage() already validates its own input (see readMinute) and
+  //    returns errors as DATA, not exceptions — so a bad argument degrades into a
+  //    tool result the model can recover from, instead of crashing the loop.
+  // ───────────────────────────────────────────────────────────────────────────
+  throw new Error(
+    `TODO(tiny-agent): implement runTool dispatch (model requested "${name}").`,
+  );
 }
 
 function getWorkshopStage(args: unknown): string {

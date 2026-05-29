@@ -18,6 +18,13 @@
  * Re-runnable and idempotent: `npm run build:skills`. Commit the result so the
  * skills are inspectable in the workshop and present on disk at runtime (the
  * skill loader reads SKILL.md from disk).
+ *
+ * 🚧 ON THE `todo` BRANCH: the generated skills/ folder is intentionally ABSENT
+ * and descriptionFor() below is a stub — generating the skill pack is YOUR job.
+ * Implement descriptionFor, then run `npm run build:skills` to create skills/.
+ * (Heads up: main() wipes skills/ before regenerating, so a broken descriptionFor
+ * writes a broken index. Compare against the reference on master, e.g.
+ *   git show master:issue-triage-skills/skills/rb-chk-01/SKILL.md )
  */
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -40,7 +47,27 @@ function slugFor(rb: Runbook): string {
  * valid YAML double-quoted scalar — safe for the colons and commas.)
  */
 function descriptionFor(rb: Runbook): string {
-  return `${rb.title} (area: ${rb.area}, owner: ${rb.owner}). Use when: ${rb.keywords.join(", ")}.`;
+  // 🗂️ ──────────────────────────────────────────────────────────────────────
+  // WORKSHOP TODO — write the skill's INDEX LINE (the heart of the "after")
+  //
+  // bash-tool builds an always-on index from each skill's frontmatter
+  // `description` — one line per runbook, e.g.
+  //     skill("rb-chk-01"): <what you return here>
+  // The model reads ONLY that index, then loads the 1–2 bodies it needs. So this
+  // single line is what lets it pick the RIGHT runbook WITHOUT reading any body.
+  //
+  // Make it discriminating — pack in what separates this runbook from its ~17
+  // siblings (several of which ALSO mention "timeouts"!):
+  //   • rb.title, rb.area, rb.owner   → who/what it's for
+  //   • a "Use when:" hint from rb.keywords → the trigger phrases
+  // e.g. `${rb.title} (area: ${rb.area}, owner: ${rb.owner}). Use when: ${rb.keywords.join(", ")}.`
+  //
+  // 💡 This IS progressive disclosure: a cheap index always in context, expensive
+  //    bodies on demand. A vague line here → the model loads the wrong runbook (or
+  //    all of them) → the exact drift we're escaping.
+  // ───────────────────────────────────────────────────────────────────────────
+  void rb; // TODO: use `rb` to build the index line.
+  return "TODO: write a discriminating one-line skill description";
 }
 
 function skillMarkdown(rb: Runbook): string {
