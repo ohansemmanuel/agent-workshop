@@ -12,12 +12,15 @@ export type ContextStats = {
 
 /**
  * Makes the payoff visible with REAL numbers. The token count is the model's own
- * `inputTokens` from the previous turn (attached as message metadata in the
- * route) — the actual context it processed: the THIN system prompt + the skill
- * index + the conversation + whatever runbook it chose to load, tokenized for
- * real. Compared with issue-triage-2x's ~14k every turn, this stays small, because
- * the runbooks and incident archive are pulled in on demand, not pasted. Before
- * the first turn we fall back to the static base-prompt size estimate.
+ * `inputTokens` for the LARGEST single step of the previous turn (attached as
+ * message metadata in the route) — the real "context size" it processed in one
+ * call: the THIN system prompt + the skill index + the conversation + whatever
+ * runbook it loaded. We show the peak step, not the sum across the tool-loop steps,
+ * so the number reads as context size (the sum would balloon on low effort, when
+ * the model loads runbooks one-per-step). Compared with issue-triage-2x's ~14k
+ * every turn, this stays small, because runbooks and incidents are pulled in on
+ * demand, not pasted. Before the first turn we fall back to the static base-prompt
+ * size estimate.
  */
 export function ContextMeter({
   stats,
@@ -33,7 +36,7 @@ export function ContextMeter({
   return (
     <div
       className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 shadow-card"
-      title="Real token usage reported by the model. inputTokens = the whole context it processed this turn (thin prompt + skill index + conversation + any loaded runbook). Runbooks and incidents are fetched on demand, not pasted — which is why this is far smaller than issue-triage-2x. 'cached' tokens are prompt-cached, so they cost even less."
+      title="Real token usage reported by the model: the largest single step this turn — the actual context size in one call (thin prompt + skill index + conversation + any loaded runbook), not the sum across the agent's steps. Runbooks and incidents are fetched on demand, not pasted, so this stays far smaller than issue-triage-2x. 'cached' tokens are prompt-cached, so they cost even less."
     >
       <div className="flex items-center gap-2">
         <Stack weight="duotone" className="size-4 shrink-0 text-zinc-400" />
