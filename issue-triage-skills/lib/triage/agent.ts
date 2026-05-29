@@ -47,41 +47,40 @@ const SKILLS_DIR = path.join(process.cwd(), "skills");
  * tiny CLI agent's hand-written loop, declared once.
  */
 async function buildAgent() {
-  // Discover the 18 runbook skills from disk. `skillFiles` is every SKILL.md as a
-  // path→content map; `instructions` is the "SKILL DIRECTORIES" note for bash.
-  const { skill, files: skillFiles, instructions } = await createSkillTool({
-    skillsDirectory: SKILLS_DIR,
-  });
-
-  // The incident archive is NOT in the prompt. Mount it as a file the bash tool
-  // can grep on demand — it costs ~0 context tokens until the model looks.
-  const incidentCount = RUNBOOKS.length * INCIDENTS_PER_RUNBOOK;
-  const files = {
-    ...skillFiles,
-    "incidents.md": generateIncidentArchive(INCIDENTS_PER_RUNBOOK),
-  };
-
-  const extraInstructions =
-    `${instructions}\n\n` +
-    `INCIDENT ARCHIVE:\n` +
-    `A full incident history (${incidentCount} entries) is in your working ` +
-    `directory as incidents.md, and is NOT in your context. Grep it for precedent ` +
-    `(e.g. \`grep -i "RB-CHK-02" incidents.md\`) instead of guessing.`;
-
-  const { tools } = await createBashTool({ files, extraInstructions });
-
+  // 🛠️ ──────────────────────────────────────────────────────────────────────
+  // WORKSHOP TODO — wire the agent's TOOLS (skill + bash, via bash-tool)
+  //
+  // Right now this returns a tool-LESS agent: it has the thin prompt but no way to
+  // load a runbook or grep incidents, so it can't actually triage. Build the
+  // toolkit — the heart of the "after" demo:
+  //
+  //   1. Discover the skills on disk:
+  //        const { skill, files: skillFiles, instructions } =
+  //          await createSkillTool({ skillsDirectory: SKILLS_DIR });
+  //      → `skill`'s auto-generated description IS the always-on index; `skillFiles`
+  //        is every SKILL.md as a path→content map.
+  //      (Run `npm run build:skills` first — skills/ is generated, see build-skills.ts.)
+  //   2. Mount the incident archive as a FILE, not in the prompt:
+  //        const files = { ...skillFiles,
+  //          "incidents.md": generateIncidentArchive(INCIDENTS_PER_RUNBOOK) };
+  //      and extend `instructions` to tell the model to grep ./incidents.md.
+  //   3. Spin up the local just-bash sandbox (no Vercel account):
+  //        const { tools } = await createBashTool({ files, extraInstructions });
+  //   4. Hand the model BOTH tools:
+  //        tools: { skill, bash: tools.bash }
+  //
+  // 💡 Budget enough steps (stepCountIs): on low reasoning effort the model loads
+  //    runbooks one-per-step, so too small a cap stops it BEFORE it answers.
+  // 🔌 createSkillTool / createBashTool / generateIncidentArchive / RUNBOOKS /
+  //    SKILLS_DIR are all imported above and waiting for you. The route must stay
+  //    the Node runtime (just-bash uses node:fs) — see app/api/chat/route.ts.
+  // ───────────────────────────────────────────────────────────────────────────
   return new ToolLoopAgent({
     model: openai(MODEL),
     instructions: SYSTEM_PROMPT,
-    tools: { skill, bash: tools.bash },
-    // Headroom for the loop. A big multi-issue queue can need many runbooks, and on
-    // low/minimal reasoning effort the model tends to load them one-per-step instead
-    // of batching — so budget enough steps to load ~10 + grep + compose, or it can
-    // hit the cap and stop BEFORE it writes the answer.
+    // TODO: replace {} with { skill, bash: tools.bash } once you build the toolkit above.
+    tools: {},
     stopWhen: stepCountIs(16),
-    // gpt-5* are reasoning models; ask for a reasoning summary so the UI can show
-    // a "Thinking…" panel. reasoningEffort mirrors issue-triage-2x's dial: unset =
-    // robust default; "minimal" strips the safety net (see REASONING_EFFORT above).
     providerOptions: {
       openai: {
         reasoningSummary: "auto",
